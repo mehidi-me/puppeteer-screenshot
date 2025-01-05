@@ -77,7 +77,7 @@ const fullPageScreenshot = async (page, options = {}) => {
     }
 
     await page.waitForSelector('img', { visible: true });
-    await page.waitForFunction(`document.querySelectorAll("img").length > 0 && !document.querySelector("img[loading='lazy']")`);
+    //await page.waitForFunction(`document.querySelectorAll("img").length > 0 && !document.querySelector("img[loading='lazy']")`);
 
     await hideStickyElements(page);
 
