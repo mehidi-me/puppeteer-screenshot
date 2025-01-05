@@ -20,7 +20,7 @@ import fullPageScreenshot from './fullPageScreenshot.js';
   for (const url of urls) {
     try {
       console.log(`Navigating to: ${url}`);
-      await page.goto(url, { waitUntil: ["load", "networkidle2"], timeout: 60000 });
+      await page.goto(url, { waitUntil: ["load", "networkidle2"]});
 
       const domainName = new URL(url).hostname.replace(/^www\./, '');
       console.log(`Starting screenshot for: ${domainName}...`);
