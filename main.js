@@ -74,7 +74,7 @@ async function make_screenshot(url, domainName) {
   ];
 
   for (const url of urls) {
-    // const domainName = new URL(url).hostname.replace(/^www\./, "");
+    const domainName = new URL(url).hostname.replace(/^www\./, "");
     // fs.access(`./images/${domainName}.png`, fs.constants.F_OK, async (err) => {
     //   if (err) {
 
