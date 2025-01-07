@@ -1,4 +1,4 @@
-// import mergeImg from "merge-img";
+ import mergeImg from "merge-img";
 import { Jimp } from "jimp";
 import { createCanvas, loadImage, Image } from 'canvas';
 import fs from 'fs'
@@ -109,7 +109,7 @@ const fullPageScreenshot = async (page, options = {}) => {
 
   const { pagesCount, extraPixels, viewport } = await page.evaluate(() => {
     window.scrollTo(0, 0);
-    const pageHeight = document.documentElement.scrollHeight;
+    const pageHeight = document.body.scrollHeight;
     return {
       pagesCount: Math.ceil(pageHeight / window.innerHeight),
       extraPixels: (pageHeight % window.innerHeight) * window.devicePixelRatio,
@@ -196,17 +196,28 @@ const fullPageScreenshot = async (page, options = {}) => {
 
   images.push(cropped);
 
-  const mergedImageBuffer = await mergeImages(images);
+  // const mergedImageBuffer = await mergeImages(images);
+  // if (path) {
+  //   await new Promise((resolve, reject) => {
+  //     fs.writeFile(path, mergedImageBuffer, (err) => {
+  //       if (err) reject(err);
+  //       else resolve();
+  //     });
+  //   });
+  // }
+  
+  // return mergedImageBuffer;
+
+  const mergedImage = await mergeImg(images, { direction: true });
   if (path) {
-    await new Promise((resolve, reject) => {
-      fs.writeFile(path, mergedImageBuffer, (err) => {
-        if (err) reject(err);
-        else resolve();
+    await new Promise((resolve) => {
+      mergedImage.write(path, () => {
+        resolve();
       });
     });
   }
-  
-  return mergedImageBuffer;
+
+  return mergedImage;
 };
 
 export default fullPageScreenshot;
