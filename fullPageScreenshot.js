@@ -50,7 +50,38 @@ const showStickyElements = async (page) => {
   });
 };
 
+const scrollPage = async (page) => {
+  await page.evaluate(async () => {
+    await new Promise((resolve) => {
+      let totalHeight = 0;
+      const distance = 100;
+      let lastScrollHeight = document.body.scrollHeight;
+
+      const timer = setInterval(() => {
+        window.scrollBy(0, distance);
+        totalHeight += distance;
+
+        const newScrollHeight = document.body.scrollHeight;
+        if (totalHeight >= lastScrollHeight) {
+          clearInterval(timer);
+          resolve();
+        } else {
+          lastScrollHeight = newScrollHeight;
+        }
+      }, 100); // Adjust the interval time as needed
+    });
+    window.scrollTo(0, 0);
+  });
+};
+
 const fullPageScreenshot = async (page, options = {}) => {
+  await page.click("body");
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+
+  await scrollPage(page);
+
+  await scrollPage(page);
+
   const { pagesCount, extraPixels, viewport } = await page.evaluate(() => {
     window.scrollTo(0, 0);
     const pageHeight = document.documentElement.scrollHeight;
@@ -70,16 +101,49 @@ const fullPageScreenshot = async (page, options = {}) => {
   };
 
   const images = [];
-  await new Promise((resolve) => setTimeout(resolve, 5000));
+  await new Promise((resolve) => setTimeout(resolve, 2000));
   for (let index = 0; index < pagesCount; index += 1) {
     if (delay) {
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
 
-    await page.waitForSelector('img', { visible: true });
+    //await page.waitForSelector('img', { visible: true });
     //await page.waitForFunction(`document.querySelectorAll("img").length > 0 && !document.querySelector("img[loading='lazy']")`);
 
-    await hideStickyElements(page);
+    if (index > 0) {
+      await hideStickyElements(page);
+    } else {
+      await page.evaluate(() => {
+        const elements = Array.from(document.querySelectorAll("*"));
+
+        elements.forEach((el) => {
+          const style = window.getComputedStyle(el);
+
+          if (
+            (style.position === "sticky" || style.position === "fixed") &&
+            (!style.backgroundImage.includes("url") ||
+              !style.background.includes("url")) &&
+            !(
+              parseInt(style.top, 10) <= 100 ||
+              parseInt(style.left, 10) <= 100 ||
+              parseInt(style.right, 10) <= 100
+            )
+          ) {
+            el.setAttribute("data-original-top", el.style.top);
+            el.style.top = "-5000px";
+            el.style.opacity = "0";
+          }
+          if (
+            (style.position === "sticky" || style.position === "fixed") &&
+            (parseInt(style.bottom, 10) <= 100 && parseInt(style.height, 10) <= 900)
+          ) {
+            el.setAttribute("data-original-top", el.style.top);
+            el.style.top = "-5000px";
+            el.style.opacity = "0";
+          }
+        });
+      });
+    }
 
     const image = await page.screenshot(pptrScreenshotOptions);
     await pageDown(page);
