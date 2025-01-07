@@ -1,5 +1,30 @@
-import mergeImg from "merge-img";
+// import mergeImg from "merge-img";
 import { Jimp } from "jimp";
+import { createCanvas, loadImage, Image } from 'canvas';
+import fs from 'fs'
+
+// ...existing code...
+
+const mergeImages = async (imageBuffers) => {
+  const loadedImages = await Promise.all(imageBuffers.map(buffer => {
+    const img = new Image();
+    img.src = buffer;
+    return img;
+  }));
+  const width = Math.max(...loadedImages.map(img => img.width));
+  const height = loadedImages.reduce((sum, img) => sum + img.height, 0);
+
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext('2d');
+
+  let y = 0;
+  for (const img of loadedImages) {
+    ctx.drawImage(img, 0, y);
+    y += img.height;
+  }
+
+  return canvas.toBuffer();
+};
 
 const pageDown = async (page) => {
   const isEnd = await page.evaluate(() => {
@@ -171,16 +196,17 @@ const fullPageScreenshot = async (page, options = {}) => {
 
   images.push(cropped);
 
-  const mergedImage = await mergeImg(images, { direction: true });
+  const mergedImageBuffer = await mergeImages(images);
   if (path) {
-    await new Promise((resolve) => {
-      mergedImage.write(path, () => {
-        resolve();
+    await new Promise((resolve, reject) => {
+      fs.writeFile(path, mergedImageBuffer, (err) => {
+        if (err) reject(err);
+        else resolve();
       });
     });
   }
-
-  return mergedImage;
+  
+  return mergedImageBuffer;
 };
 
 export default fullPageScreenshot;

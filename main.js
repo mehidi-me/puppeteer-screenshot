@@ -2,9 +2,9 @@ import puppeteer from "puppeteer";
 import fullPageScreenshot from "./fullPageScreenshot.js";
 import fs from "fs";
 
-async function make_screenshot(url, domainName) {
-  //const browser = await puppeteer.launch({ headless: false, defaultViewport: { width: 1920, height: 1080 } });
-  const browser = await puppeteer.launch();
+async function make_screenshot(url, domainName) { 
+  const browser = await puppeteer.launch({ headless: false, defaultViewport: { width: 1920, height: 1080 } });
+  //const browser = await puppeteer.launch();
   const page = await browser.newPage();
   await page.setViewport({ width: 1920, height: 1080 });
   try {
